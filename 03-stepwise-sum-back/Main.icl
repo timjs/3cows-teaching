@@ -4,6 +4,17 @@ module Main
 import iTasks
 
 
+/*
+
+# Exercises
+
+## Exercise 3
+
+Complement the template below
+
+*/
+
+
 
 // Tasks ///////////////////////////////////////////////////////////////////////
 
@@ -18,16 +29,16 @@ step1 first second =
 step2 :: Int Int -> Task Int
 step2 first second =
   updateInformation "Enter the second number" [] second >>?
-    [ ( "Go back", const True, \second_new -> step1 first second_new )
-    , ( "Continue", const True, \second_new -> step3 first second_new )
+    [ ( "Go back", /* condition 1 */, \second_new -> /* task 1 */)
+    , ( "Continue", /* condition 2 */, \second_new -> /* task 2 */)
     ]
 
 
 step3 :: Int Int -> Task Int
 step3 first second =
   viewInformation "The sum of those numbers is" [] second >>?
-    [ ( "Go back", const True, const (step1 first second) )
-    , ( "Finish", const True, const (return (first + second)) )
+    [ /* action 1 */
+    , /* action 2 */
     ]
 
 

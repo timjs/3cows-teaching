@@ -70,11 +70,11 @@ freeSeatStore =
 
 
 valid :: Passenger -> Bool
-valid p = p.age >= 0
+valid p = /* when is a person valid? */
 
 
 adult :: Passenger -> Bool
-adult p = p.age >= 18
+adult p = /* when is a person an adult? */
 
 
 
@@ -85,7 +85,7 @@ enterPassengers :: Task [Passenger]
 enterPassengers =
   enterInformation "Passenger details" [] >>?
     [ ( "Continue"
-      , \passengers -> all valid passengers && any adult passengers && not (isEmpty passengers)
+      , \passengers -> /* check for one adult, valid ages and at least one passenger */
       , return
       )
     ]
@@ -101,16 +101,18 @@ chooseSeats :: Int -> Task [Seat]
 chooseSeats n =
   enterMultipleChoiceWithShared "Pick a seat" [] freeSeatStore >>?
     [ ( "Continue"
-      , \seats -> length seats == n
-      , \seats -> freeSeatStore $= removeElems seats >>- \_ -> return seats
+      , \seats -> /* check if a right number of seats is selected */
+      , \seats ->
+          freeSeatStore $= /* use one of the helpers above */ >>- \_ ->
+          return seats
       )
     ]
 
 
 makeBooking :: -> Task Booking
 makeBooking =
-  (enterFlight -&&- enterPassengers) >>- \( flight, passengers ) ->
-  chooseSeats (length passengers) >>- \seats ->
+  /* create a combination of tasks which does `enterFlight` and `enterPassengers` in parallel */ >>- \( flight, passengers ) ->
+  /* and then lets the user choose the right amount of seats with `chooseSeats` */ >>- \seats ->
   viewInformation "Booking" [] { passengers = passengers, flight = flight, seats = seats }
 
 

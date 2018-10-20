@@ -4,6 +4,23 @@ module Main
 import iTasks
 
 
+/*
+
+# Exercises
+
+## Exercise 1
+
+Add a `dateOfBirth` field to the `Person` type.
+Compile, what changed?
+
+
+## Exercise 2
+
+Complement this example with the famility tree as we did during the lecture.
+
+*/
+
+
 
 // Types ///////////////////////////////////////////////////////////////////////
 
@@ -12,7 +29,6 @@ import iTasks
   { firstName :: String
   , lastName :: String
   , gender :: Gender
-  , dateOfBirth :: Date
   }
 
 
@@ -21,28 +37,20 @@ import iTasks
   | Female
 
 
-:: Family =
-  { person :: Person
-  , spouse :: Maybe Person
-  , children :: [Family]
-  }
-
-
-
 // Tasks ///////////////////////////////////////////////////////////////////////
 
 
-main :: Task Family
+main :: Task Person
 main =
-  enterInformation "Enter your family details" [] >>= \family ->
-  viewInformation "You entered this information" [] family
+  enterInformation "Enter your personal details" [] >>= \person ->
+  viewInformation "You entered this information" [] person
 
 
 
 // Boilerplate /////////////////////////////////////////////////////////////////
 
 
-derive class iTask Person, Gender, Family
+derive class iTask Person, Gender//, Family
 
 
 Start :: *World -> *World
