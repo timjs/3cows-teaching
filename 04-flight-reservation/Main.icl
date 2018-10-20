@@ -8,14 +8,14 @@ import iTasks
 // Helpers /////////////////////////////////////////////////////////////////////
 
 
-remove :: a (List a) -> List a | iTask a
+remove :: a [a] -> [a] | iTask a
 remove x [y:ys]
   | x === y   = ys
   | otherwise = [y : remove x ys]
 remove x []   = []
 
 
-removeElems :: (List a) (List a) -> List a | iTask a
+removeElems :: [a] [a] -> [a] | iTask a
 removeElems []     ys = ys
 removeElems [x:xs] ys = removeElems xs (remove x ys)
 
@@ -50,9 +50,9 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
 
 
 :: Booking =
-  { passengers :: List Passenger
+  { passengers :: [Passenger]
   , flight :: Flight
-  , seats :: List Seat
+  , seats :: [Seat]
   }
 
 
@@ -60,9 +60,9 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
 // Stores //////////////////////////////////////////////////////////////////////
 
 
-freeSeatStore :: Shared (List Seat)
+freeSeatStore :: Shared [Seat]
 freeSeatStore =
-  share "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'D'] ]
+  sharedStore "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'D'] ]
 
 
 
@@ -81,43 +81,42 @@ adult p = p.age >= 18
 // Tasks ///////////////////////////////////////////////////////////////////////
 
 
-enterPassengers :: () -> Task (List Passenger)
-enterPassengers () =
-  enter "Passenger details" >?>
-    [ ( "Continue", all valid &&& any adult &&& not o empty, return ) ]
-
-
-enterFlight :: () -> Task Flight
-enterFlight () =
-  enter "Flight details" >?>
-    [ ( "Continue", ok, return ) ]
-
-
-chooseSeats :: Int -> Task (List Seat)
-chooseSeats n =
-  select "Pick a seat" [] freeSeatStore >?>
+enterPassengers :: Task [Passenger]
+enterPassengers =
+  enterInformation "Passenger details" [] >>?
     [ ( "Continue"
-      , \(seats) -> length seats == n
-      , \(seats) -> freeSeatStore $= removeElems seats >> return seats
+      , \passengers -> all valid passengers && any adult passengers && not (isEmpty passengers)
+      , return
       )
     ]
 
 
-makeBooking :: () -> Task Booking
-makeBooking () =
-  ( enterFlight ()
-      <&>
-    enterPassengers ()
-  ) >>= \( (flight), (passengers) ) ->
-  chooseSeats (length passengers) >>= \(seats) ->
-  //XXX We need record fields here!!!
-  view "Booking" { passengers = passengers, flight = flight, seats = seats }
+enterFlight :: Task Flight
+enterFlight =
+  enterInformation "Flight details" [] >>?
+    [ ( "Continue", const True, return ) ]
+
+
+chooseSeats :: Int -> Task [Seat]
+chooseSeats n =
+  enterMultipleChoiceWithShared "Pick a seat" [] freeSeatStore >>?
+    [ ( "Continue"
+      , \seats -> length seats == n
+      , \seats -> freeSeatStore $= removeElems seats >>- \_ -> return seats
+      )
+    ]
+
+
+makeBooking :: -> Task Booking
+makeBooking =
+  (enterFlight -&&- enterPassengers) >>- \( flight, passengers ) ->
+  chooseSeats (length passengers) >>- \seats ->
+  viewInformation "Booking" [] { passengers = passengers, flight = flight, seats = seats }
 
 
 main :: Task Booking
 main =
-  //XXX What about using and forgetting?
-  watch "Free seats" freeSeatStore &> makeBooking ()
+  viewSharedInformation "Free seats" [] freeSeatStore ||- makeBooking
 
 
 
@@ -132,14 +131,11 @@ Start :: *World -> *World
 Start world = startEngine main world
 
 
-:: List a :== [a]
-
-
-ok :== const True
-
-
-// External step (>>*)
-(>>?) infixl 1 //:: Task a -> List ( String, a -> Bool, a -> Task b ) -> Task b
-(>>?) task options :== task >>* map trans options
+(>>?) infixl 1 :: (Task a) [( String, a -> Bool, a -> Task b )] -> Task b | iTask a & iTask b
+(>>?) task options = task >>* map trans options
 where
   trans ( a, p, t ) = OnAction (Action a) (ifValue p t)
+
+
+($=) infixr 2 :: (ReadWriteShared r w) (r -> w) -> Task w | iTask r & iTask w
+($=) share fun = upd fun share

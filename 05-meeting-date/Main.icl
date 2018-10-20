@@ -8,7 +8,7 @@ import iTasks
 // Types ///////////////////////////////////////////////////////////////////////
 
 
-:: User :== String
+:: Name :== String
 
 
 :: DateOption =
@@ -27,7 +27,7 @@ import iTasks
 // Stores //////////////////////////////////////////////////////////////////////
 
 
-users :: Shared [User]
+users :: Shared [Name]
 users =
  [ "Rinus"
  , "Peter"
@@ -45,9 +45,9 @@ initTable dates =
   [ { users = [], date = date } \\ date <- dates ]
 
 
-updateTable :: [Int] [MeetingOption] -> [MeetingOption]
-updateTable indices options =
-  [ { option & users = if (isMember j indices) [user : option.users] option.users }
+updateTable :: Name [Int] [MeetingOption] -> [MeetingOption]
+updateTable name indices options =
+  [ { option & users = if (isMember j indices) [name : option.users] option.users }
   \\ j <- [0..] & option <- options
   ]
 
@@ -76,24 +76,27 @@ selectDatesToPropose =
   enterInformation "Select the date(s) and time you propose to meet..." []
 
 
-selectAttendencees :: Task [User]
+selectAttendencees :: Task [Name]
 selectAttendencees =
   enterMultipleChoiceWithShared ("Who do you want to invite for the meeting?")
     [ChooseFromCheckGroup id] users
 
 
-askOthers :: String [DateOption] [User] -> Task MeetingOption
+askOthers :: String [DateOption] [Name] -> Task MeetingOption
 askOthers purpose dates others =
-  withShared (initTable dates) $ \table ->
-    allTasks [ ( user, purpose ) @: askOne (toString user) \\ user <- others ]
+  withShared (initTable dates) askAll
 
+  where
 
-askOne user table =
-  viewSharedInformation "Current Responses:" [] table
-    ||-
-  enterMultipleChoice "Select the date(s) you can attend the meeting:"
-    [ChooseFromGrid (\i -> dates!!i)] [0..length dates - 1] >>= \indices ->
-  upd (updateTable indices) table
+  askAll table =
+    allTasks [ ( name, purpose ) @: askOne (toString name) \\ name <- others ]
+
+  askOne name table =
+    viewSharedInformation "Current Responses:" [] table
+      ||-
+    enterMultipleChoiceWithShared "Select the date(s) you can attend the meeting:"
+      [ChooseFromGrid (\i -> dates!!i)] [0..length dates - 1] >>= \indices ->
+    table $= updateTable indices
 
 
 selectMeetingDate :: (Shared [MeetingOption]) -> Task MeetingOption
@@ -110,3 +113,13 @@ derive class iTask DateOption, MeetingOption
 
 Start :: *World -> *World
 Start world = startEngine main world
+
+
+(>>?) infixl 1 :: (Task a) [( String, a -> Bool, a -> Task b )] -> Task b | iTask a & iTask b
+(>>?) task options = task >>* map trans options
+where
+  trans ( a, p, t ) = OnAction (Action a) (ifValue p t)
+
+
+($=) infixr 2 :: (ReadWriteShared r w) (r -> w) -> Task w | iTask r & iTask w
+($=) share fun = upd fun share

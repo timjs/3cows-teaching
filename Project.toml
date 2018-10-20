@@ -2,7 +2,7 @@
 Name = "Intro"
 Version = "0.1.0"
 Authors = ["Tim Steenvoorden <tim@cs.ru.nl>"]
-Sourcedir = "03-stepwise-sum-back"
+Sourcedir = "05-meeting-date"
 
 [Executable]
 Name = "main.exe"
