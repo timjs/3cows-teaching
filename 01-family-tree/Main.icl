@@ -19,6 +19,7 @@ import iTasks
 :: Gender
   = Male
   | Female
+  | Other
 
 
 :: Family =
@@ -34,8 +35,7 @@ import iTasks
 
 main :: Task Family
 main =
-  enterInformation "Enter your family details" [] >>= \family ->
-  viewInformation "You entered this information" [] family
+  enterInformation "Enter your family details" []
 
 
 
@@ -46,4 +46,4 @@ derive class iTask Person, Gender, Family
 
 
 Start :: *World -> *World
-Start world = startEngine main world
+Start world = startEngine (main <<@ InWindow) world
