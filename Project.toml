@@ -4,8 +4,8 @@ Version = "0.1.0"
 Authors = ["Tim Steenvoorden <tim@cs.ru.nl>"]
 # Sourcedir = "1-family-tree"
 # Sourcedir = "2-stepwise-sum-back"
-Sourcedir = "3-flight-reservation"
-# Sourcedir = "4-meeting-date"
+# Sourcedir = "3-flight-reservation"
+Sourcedir = "4-meeting-date"
 
 [Executable]
 Name = "main.exe"

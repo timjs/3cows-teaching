@@ -2,6 +2,7 @@ module Main
 
 
 import iTasks
+from StdEnv import undef
 
 
 
@@ -31,10 +32,8 @@ import iTasks
 
 
 elem :: a [a] -> Bool | iTask a
-elem x []     = False
-elem x [y:ys]
-  | x === y   = True
-  | otherwise = False
+elem x ys =
+  undef
 
 
 
@@ -53,21 +52,15 @@ users =
 
 // Stores //////////////////////////////////////////////////////////////////////
 
+
 initTable :: [DateOption] -> Table
 initTable dates =
-  [ { users = [], moment = moment } \\ moment <- dates ]
+  undef
 
 
 updateTable :: Name [DateOption] Table -> Table
 updateTable name selected table =
-  [ { option
-    & users =
-        if (elem option.moment selected)
-          [name : option.users]
-          option.users
-    }
-  \\ option <- table
-  ]
+  undef
 
 
 getDate :: MeetingOption -> DateOption
@@ -90,42 +83,36 @@ main =
 
 defineMeetingPurpose :: Task String
 defineMeetingPurpose =
-  enterInformation "What is the purpose of the meeting?" []
+  undef
 
 
 selectDatesToPropose :: Task [DateOption]
 selectDatesToPropose =
-  enterInformation "Enter the moment you'd like to meet..." []
+  undef
 
 
 selectAttendencees :: Task [Name]
 selectAttendencees =
-  enterMultipleChoice "Who do you want to invite for the meeting?" [] users
+  undef
 
 
 askOthers :: String [DateOption] [Name] -> Task Table
 askOthers purpose dates others =
   withShared (initTable dates) (\table ->
-    allTasks [ ask purpose name table \\ name <- others ] >>= \_ ->
-    get table
+    undef
   )
 
 
 ask :: String Name (Shared Table) -> Task [DateOption]
 ask purpose name table =
   viewSharedInformation ( name, "Current Responses" ) [] table ||- (
-    enterMultipleChoiceWithShared
-      ("Select the moment(s) you can attend for " +++ purpose)
-      [] table >>= \options ->
-    let moments = map getDate options in
-    table $= updateTable name moments >>- \_ ->
-    viewInformation "You selected" [] moments
+    undef
   )
 
 
 selectMeetingDate :: String Table -> Task MeetingOption
 selectMeetingDate purpose table =
-  enterChoice ("Select the moment for " +++ purpose) [] table
+  undef
 
 
 
