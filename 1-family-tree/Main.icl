@@ -4,27 +4,13 @@ module Main
 import iTasks
 
 
-/*
-
-# Exercises
-
-## Exercise 1
-
-Add a `dateOfBirth` field to the `Person` type.
-Compile, what changed?
-
-
-## Exercise 2
-
-Complement this example with the famility tree as we did during the lecture.
-
-*/
-
-
-
 // Types ///////////////////////////////////////////////////////////////////////
 
 
+/*
+Add a `dateOfBirth` field to the `Person` type.
+Compile, what changed?
+*/
 :: Person =
   { firstName :: String
   , lastName :: String
@@ -36,6 +22,13 @@ Complement this example with the famility tree as we did during the lecture.
   = Male
   | Female
   | Other
+
+
+/*
+Complement this example with the same famility tree data type
+as we did during the lecture.
+*/
+
 
 
 // Tasks ///////////////////////////////////////////////////////////////////////

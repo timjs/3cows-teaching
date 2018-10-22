@@ -4,8 +4,12 @@ module Main
 import iTasks
 
 
-
 // Tasks ///////////////////////////////////////////////////////////////////////
+
+/*
+Adapt this example in such a way that you can go back to the previous step.
+First think about what actions/buttons do you need to add to the step lists!
+*/
 
 
 step1 :: Task Int
