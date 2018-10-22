@@ -25,15 +25,22 @@ step2 first second =
 
 step3 :: Int Int -> Task Int
 step3 first second =
-  viewInformation "The sum of those numbers is" [] second >>?
-    [ ( "Go back", const True, const (step1 first second) )
-    , ( "Finish", const True, const (return (first + second)) )
+  let
+    sum = first + second
+  in
+  viewInformation "The sum of those numbers is" [] sum >>?
+    [ ( "Go back", const True, const (step2 first second) )
+    , ( "Finish", const True, const (ready sum) )
     ]
+
+
+ready :: Int -> Task Int
+ready sum = viewInformation "Ready! We calculated" [] sum
 
 
 main :: Task Int
 main =
-  step1 0 0
+  step1 0 0 <<@ InWindow
 
 
 
