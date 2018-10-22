@@ -89,7 +89,9 @@ enterFlight =
   enterInformation "Flight details" [] >>?
     [ ( "Continue"
       , const True
-      , return ) ]
+      , return
+      )
+    ]
 
 
 chooseSeats :: Int -> Task [Seat]
@@ -97,7 +99,9 @@ chooseSeats n =
   enterMultipleChoiceWithShared "Pick a seat" [] freeSeatStore >>?
     [ ( "Pick"
       , \seats -> length seats == n
-      , \seats -> freeSeatStore $= removeElems seats >>- \_ -> return seats
+      , \seats ->
+          freeSeatStore $= removeElems seats >>- \_ ->
+          return seats
       )
     ]
 
