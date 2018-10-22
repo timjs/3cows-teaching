@@ -18,7 +18,7 @@ import iTasks
 
 
 :: MeetingOption =
-  { users :: [String]
+  { users :: [Name]
   , date :: DateOption
   }
 
@@ -27,7 +27,7 @@ import iTasks
 // Stores //////////////////////////////////////////////////////////////////////
 
 
-users :: Shared [Name]
+users :: [Name]
 users =
  [ "Rinus"
  , "Peter"
@@ -40,7 +40,7 @@ users =
 // Helpers /////////////////////////////////////////////////////////////////////
 
 
-initTable :: [Date] -> [MeetingOption]
+initTable :: [DateOption] -> [MeetingOption]
 initTable dates =
   [ { users = [], date = date } \\ date <- dates ]
 
@@ -78,30 +78,31 @@ selectDatesToPropose =
 
 selectAttendencees :: Task [Name]
 selectAttendencees =
-  enterMultipleChoiceWithShared ("Who do you want to invite for the meeting?")
+  enterMultipleChoice "Who do you want to invite for the meeting?"
     [ChooseFromCheckGroup id] users
 
 
-askOthers :: String [DateOption] [Name] -> Task MeetingOption
+askOthers :: String [DateOption] [Name] -> Task [MeetingOption]
 askOthers purpose dates others =
-  withShared (initTable dates) askAll
+  withShared (initTable dates) (\table ->
+    allTasks [ askOne table name \\ name <- others ] >>= \_ ->
+    get table
+  )
 
   where
 
-  askAll table =
-    allTasks [ ( name, purpose ) @: askOne (toString name) \\ name <- others ]
-
-  askOne name table =
+  askOne :: (Shared [MeetingOption]) Name -> Task [MeetingOption]
+  askOne table name =
     viewSharedInformation "Current Responses:" [] table
       ||-
     enterMultipleChoiceWithShared "Select the date(s) you can attend the meeting:"
       [ChooseFromGrid (\i -> dates!!i)] [0..length dates - 1] >>= \indices ->
-    table $= updateTable indices
+    table $= updateTable name indices
 
 
-selectMeetingDate :: (Shared [MeetingOption]) -> Task MeetingOption
+selectMeetingDate :: [MeetingOption] -> Task MeetingOption
 selectMeetingDate table =
-  enterChoiceWithShared "Select the date for the meeting:" [ChooseFromGrid id] table
+  enterChoice "Select the date for the meeting:" [ChooseFromGrid id] table
 
 
 
