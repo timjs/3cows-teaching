@@ -2,13 +2,14 @@
 Name = "Intro"
 Version = "0.1.0"
 Authors = ["Tim Steenvoorden <tim@cs.ru.nl>"]
-Sourcedir = "01-family-tree"
-# Sourcedir = "02-stepwise-sum"
-# Sourcedir = "03-stepwise-sum-positive"
-# Sourcedir = "04-stepwise-sum-back"
-# Sourcedir = "05-pick-seat"
-# Sourcedir = "06-flight-reservation"
-# Sourcedir = "07-meeting-date"
+# Sourcedir = "1.1-family-tree"
+# Sourcedir = "2.1-stepwise-sum"
+# Sourcedir = "2.2-stepwise-sum-positive"
+# Sourcedir = "2.3-stepwise-sum-back"
+# Sourcedir = "3.1-pick-seat"
+Sourcedir = "3.2-pick-free-seat"
+# Sourcedir = "3.3-flight-reservation"
+# Sourcedir = "4.4-meeting-date"
 
 [Executable]
 Name = "main.exe"

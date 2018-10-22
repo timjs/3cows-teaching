@@ -37,13 +37,13 @@ initSeats =
 // Tasks ///////////////////////////////////////////////////////////////////////
 
 
-chooseSeat :: Task Seat
-chooseSeat =
-  enterChoice "Pick a seat" [] initSeats >>?
+chooseSeat :: (Shared [Seat]) -> Task Seat
+chooseSeat freeSeats =
+  enterChoiceWithShared "Pick a seat" [] freeSeats >>?
     [ ( "Pick"
       , const True
       , \seat ->
-          let initSeats = remove seat initSeats in
+          freeSeats $= remove seat >>- \_ ->
           viewInformation "You picked" [] seat
       )
     ]
@@ -51,9 +51,11 @@ chooseSeat =
 
 main :: Task [Seat]
 main =
-  viewInformation "Free seats" [] initSeats
-    ||-
-  allTasks [chooseSeat, chooseSeat, chooseSeat]
+  withShared initSeats (\freeSeats ->
+    viewSharedInformation "Free seats" [] freeSeats
+      ||-
+    allTasks [chooseSeat freeSeats, chooseSeat freeSeats, chooseSeat freeSeats]
+  )
 
 
 

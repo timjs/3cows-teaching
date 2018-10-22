@@ -115,7 +115,9 @@ makeBooking =
 
 main :: Task Booking
 main =
-  viewSharedInformation "Free seats" [] freeSeatStore ||- makeBooking
+  viewSharedInformation "Free seats" [] freeSeatStore
+    ||-
+  makeBooking
 
 
 
