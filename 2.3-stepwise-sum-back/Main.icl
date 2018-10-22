@@ -21,14 +21,14 @@ Complement the template below
 
 step1 :: Int Int -> Task Int
 step1 first second =
-  updateInformation "Enter the first number" [] first >>?
+  updateInformation "Enter your own age" [] first >>?
     [ ( "Continue", const True, \first_new -> step2 first_new second )
     ]
 
 
 step2 :: Int Int -> Task Int
 step2 first second =
-  updateInformation "Enter the second number" [] second >>?
+  updateInformation "Enter your spouse's age" [] second >>?
     [ ( "Go back", /* condition 1 */, \second_new -> /* task 1 */)
     , ( "Continue", /* condition 2 */, \second_new -> /* task 2 */)
     ]
@@ -36,10 +36,17 @@ step2 first second =
 
 step3 :: Int Int -> Task Int
 step3 first second =
-  viewInformation "The sum of those numbers is" [] second >>?
+  let
+    sum = first + second
+  in
+  viewInformation "The total age is" [] sum >>?
     [ /* action 1 */
     , /* action 2 */
     ]
+
+
+ready :: Int -> Task Int
+ready sum = viewInformation "Ready! We calculated" [] sum
 
 
 main :: Task Int
@@ -52,7 +59,7 @@ main =
 
 
 Start :: *World -> *World
-Start world = startEngine main world
+Start world = startEngine (main <<@ InWindow) world
 
 
 (>>?) infixl 1 :: (Task a) [( String, a -> Bool, a -> Task b )] -> Task b | iTask a & iTask b

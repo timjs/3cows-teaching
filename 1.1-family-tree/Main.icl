@@ -35,6 +35,7 @@ Complement this example with the famility tree as we did during the lecture.
 :: Gender
   = Male
   | Female
+  | Other
 
 
 // Tasks ///////////////////////////////////////////////////////////////////////
@@ -42,8 +43,7 @@ Complement this example with the famility tree as we did during the lecture.
 
 main :: Task Person
 main =
-  enterInformation "Enter your personal details" [] >>= \person ->
-  viewInformation "You entered this information" [] person
+  enterInformation "Enter your family details" []
 
 
 
@@ -54,4 +54,4 @@ derive class iTask Person, Gender//, Family
 
 
 Start :: *World -> *World
-Start world = startEngine main world
+Start world = startEngine (main <<@ InWindow) world

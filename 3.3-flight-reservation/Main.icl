@@ -5,6 +5,35 @@ import iTasks
 
 
 
+// Types ///////////////////////////////////////////////////////////////////////
+
+
+:: Passenger =
+  { firstName :: String
+  , lastName :: String
+  , age :: Int
+  }
+
+
+:: Seat  = Seat Row Chair
+:: Row   :== Int
+:: Chair :== Char
+
+
+:: Flight
+  = ToAmsterdam
+  | ToLisbon
+  | ToBudapest
+
+
+:: Booking =
+  { passengers :: [Passenger]
+  , flight :: Flight
+  , seats :: [Seat]
+  }
+
+
+
 // Helpers /////////////////////////////////////////////////////////////////////
 
 
@@ -21,48 +50,12 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
 
 
 
-// Data ////////////////////////////////////////////////////////////////////////
-
-
-:: Nationality
-  = Dutch
-  | Portugues
-  | Hongarian
-
-
-:: Passenger =
-  { firstName :: String
-  , lastName :: String
-  , nationality :: Nationality
-  , age :: Int
-  }
-
-
-:: Flight
-  = ToAmsterdam
-  | ToLisbon
-  | ToBudapest
-
-
-:: Row   :== Int
-:: Chair :== Char
-:: Seat  = Seat Row Chair
-
-
-:: Booking =
-  { passengers :: [Passenger]
-  , flight :: Flight
-  , seats :: [Seat]
-  }
-
-
-
 // Stores //////////////////////////////////////////////////////////////////////
 
 
 freeSeatStore :: Shared [Seat]
 freeSeatStore =
-  sharedStore "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'D'] ]
+  sharedStore "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'C'] ]
 
 
 
@@ -94,13 +87,17 @@ enterPassengers =
 enterFlight :: Task Flight
 enterFlight =
   enterInformation "Flight details" [] >>?
-    [ ( "Continue", const True, return ) ]
+    [ ( "Continue"
+      , const True
+      , return
+      )
+    ]
 
 
 chooseSeats :: Int -> Task [Seat]
 chooseSeats n =
   enterMultipleChoiceWithShared "Pick a seat" [] freeSeatStore >>?
-    [ ( "Continue"
+    [ ( "Pick"
       , \seats -> /* check if a right number of seats is selected */
       , \seats ->
           freeSeatStore $= /* use one of the helpers above */ >>- \_ ->
@@ -118,7 +115,9 @@ makeBooking =
 
 main :: Task Booking
 main =
-  viewSharedInformation "Free seats" [] freeSeatStore ||- makeBooking
+  viewSharedInformation "Free seats" [] freeSeatStore
+    ||-
+  makeBooking
 
 
 
@@ -130,7 +129,7 @@ derive class iTask Seat, Flight, Booking, Passenger, Nationality
 
 
 Start :: *World -> *World
-Start world = startEngine main world
+Start world = startEngine (main <<@ InWindow) world
 
 
 (>>?) infixl 1 :: (Task a) [( String, a -> Bool, a -> Task b )] -> Task b | iTask a & iTask b
