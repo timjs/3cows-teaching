@@ -12,15 +12,29 @@ import iTasks
 
 
 :: DateOption =
-  { date :: Date
-  , hour :: Int
+  { day :: Date
+  , time :: Time
   }
 
 
 :: MeetingOption =
   { users :: [Name]
-  , date :: DateOption
+  , moment :: DateOption
   }
+
+
+:: Table :== [MeetingOption]
+
+
+
+// Helpers /////////////////////////////////////////////////////////////////////
+
+
+elem :: a [a] -> Bool | iTask a
+elem x []     = False
+elem x [y:ys]
+  | x === y   = True
+  | otherwise = False
 
 
 
@@ -29,27 +43,35 @@ import iTasks
 
 users :: [Name]
 users =
- [ "Rinus"
- , "Peter"
- , "Mart"
- , "Tim"
- ]
-
-
-
-// Helpers /////////////////////////////////////////////////////////////////////
-
-
-initTable :: [DateOption] -> [MeetingOption]
-initTable dates =
-  [ { users = [], date = date } \\ date <- dates ]
-
-
-updateTable :: Name [Int] [MeetingOption] -> [MeetingOption]
-updateTable name indices options =
-  [ { option & users = if (isMember j indices) [name : option.users] option.users }
-  \\ j <- [0..] & option <- options
+  [ "Rinus"
+  , "Peter"
+  , "Mart"
+  , "Tim"
   ]
+
+
+
+// Stores //////////////////////////////////////////////////////////////////////
+
+initTable :: [DateOption] -> Table
+initTable dates =
+  [ { users = [], moment = moment } \\ moment <- dates ]
+
+
+updateTable :: Name [DateOption] Table -> Table
+updateTable name selected table =
+  [ { option
+    & users =
+        if (elem option.moment selected)
+          [name : option.users]
+          option.users
+    }
+  \\ option <- table
+  ]
+
+
+getDate :: MeetingOption -> DateOption
+getDate meeting = meeting.moment
 
 
 
@@ -62,7 +84,7 @@ main =
   selectDatesToPropose >>= \dates ->
   selectAttendencees >>= \others ->
   askOthers purpose dates others >>= \options ->
-  selectMeetingDate options >>= \chosen ->
+  selectMeetingDate purpose options >>= \chosen ->
   viewInformation "Date chosen:" [] chosen
 
 
@@ -73,36 +95,37 @@ defineMeetingPurpose =
 
 selectDatesToPropose :: Task [DateOption]
 selectDatesToPropose =
-  enterInformation "Select the date(s) and time you propose to meet..." []
+  enterInformation "Enter the moment you'd like to meet..." []
 
 
 selectAttendencees :: Task [Name]
 selectAttendencees =
-  enterMultipleChoice "Who do you want to invite for the meeting?"
-    [ChooseFromCheckGroup id] users
+  enterMultipleChoice "Who do you want to invite for the meeting?" [] users
 
 
-askOthers :: String [DateOption] [Name] -> Task [MeetingOption]
+askOthers :: String [DateOption] [Name] -> Task Table
 askOthers purpose dates others =
   withShared (initTable dates) (\table ->
-    allTasks [ askOne table name \\ name <- others ] >>= \_ ->
+    allTasks [ ask purpose name table \\ name <- others ] >>= \_ ->
     get table
   )
 
-  where
 
-  askOne :: (Shared [MeetingOption]) Name -> Task [MeetingOption]
-  askOne table name =
-    viewSharedInformation "Current Responses:" [] table
-      ||-
-    enterMultipleChoiceWithShared "Select the date(s) you can attend the meeting:"
-      [ChooseFromGrid (\i -> dates!!i)] [0..length dates - 1] >>= \indices ->
-    table $= updateTable name indices
+ask :: String Name (Shared Table) -> Task [DateOption]
+ask purpose name table =
+  viewSharedInformation ( name, "Current Responses" ) [] table ||- (
+    enterMultipleChoiceWithShared
+      ("Select the moment(s) you can attend for " +++ purpose)
+      [] table >>= \options ->
+    let moments = map getDate options in
+    table $= updateTable name moments >>- \_ ->
+    viewInformation "You selected" [] moments
+  )
 
 
-selectMeetingDate :: [MeetingOption] -> Task MeetingOption
-selectMeetingDate table =
-  enterChoice "Select the date for the meeting:" [ChooseFromGrid id] table
+selectMeetingDate :: String Table -> Task MeetingOption
+selectMeetingDate purpose table =
+  enterChoice ("Select the moment for " +++ purpose) [] table
 
 
 
