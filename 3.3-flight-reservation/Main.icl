@@ -5,22 +5,6 @@ import iTasks
 
 
 
-// Helpers /////////////////////////////////////////////////////////////////////
-
-
-remove :: a [a] -> [a] | iTask a
-remove x [y:ys]
-  | x === y   = ys
-  | otherwise = [y : remove x ys]
-remove x []   = []
-
-
-removeElems :: [a] [a] -> [a] | iTask a
-removeElems []     ys = ys
-removeElems [x:xs] ys = removeElems xs (remove x ys)
-
-
-
 // Types ///////////////////////////////////////////////////////////////////////
 
 
@@ -47,6 +31,22 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
   , flight :: Flight
   , seats :: [Seat]
   }
+
+
+
+// Helpers /////////////////////////////////////////////////////////////////////
+
+
+remove :: a [a] -> [a] | iTask a
+remove x [y:ys]
+  | x === y   = ys
+  | otherwise = [y : remove x ys]
+remove x []   = []
+
+
+removeElems :: [a] [a] -> [a] | iTask a
+removeElems []     ys = ys
+removeElems [x:xs] ys = removeElems xs (remove x ys)
 
 
 
