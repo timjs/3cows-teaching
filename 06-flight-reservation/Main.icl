@@ -21,32 +21,25 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
 
 
 
-// Data ////////////////////////////////////////////////////////////////////////
-
-
-:: Nationality
-  = Dutch
-  | Portugues
-  | Hongarian
+// Types ///////////////////////////////////////////////////////////////////////
 
 
 :: Passenger =
   { firstName :: String
   , lastName :: String
-  , nationality :: Nationality
   , age :: Int
   }
+
+
+:: Seat  = Seat Row Chair
+:: Row   :== Int
+:: Chair :== Char
 
 
 :: Flight
   = ToAmsterdam
   | ToLisbon
   | ToBudapest
-
-
-:: Row   :== Int
-:: Chair :== Char
-:: Seat  = Seat Row Chair
 
 
 :: Booking =
@@ -62,7 +55,7 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
 
 freeSeatStore :: Shared [Seat]
 freeSeatStore =
-  sharedStore "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'D'] ]
+  sharedStore "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'C'] ]
 
 
 
@@ -94,13 +87,15 @@ enterPassengers =
 enterFlight :: Task Flight
 enterFlight =
   enterInformation "Flight details" [] >>?
-    [ ( "Continue", const True, return ) ]
+    [ ( "Continue"
+      , const True
+      , return ) ]
 
 
 chooseSeats :: Int -> Task [Seat]
 chooseSeats n =
   enterMultipleChoiceWithShared "Pick a seat" [] freeSeatStore >>?
-    [ ( "Continue"
+    [ ( "Pick"
       , \seats -> length seats == n
       , \seats -> freeSeatStore $= removeElems seats >>- \_ -> return seats
       )
@@ -128,7 +123,7 @@ derive class iTask Seat, Flight, Booking, Passenger, Nationality
 
 
 Start :: *World -> *World
-Start world = startEngine main world
+Start world = startEngine (main <<@ InWindow) world
 
 
 (>>?) infixl 1 :: (Task a) [( String, a -> Bool, a -> Task b )] -> Task b | iTask a & iTask b
