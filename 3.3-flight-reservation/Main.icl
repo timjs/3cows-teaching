@@ -53,9 +53,9 @@ removeElems [x:xs] ys = removeElems xs (remove x ys)
 // Stores //////////////////////////////////////////////////////////////////////
 
 
-freeSeatStore :: Shared [Seat]
-freeSeatStore =
-  sharedStore "Free seats" [ Seat r p \\ r <- [1..4], p <- ['A'..'C'] ]
+initSeats :: [Seat]
+initSeats =
+  [ Seat r p \\ r <- [1..4], p <- ['A'..'C'] ]
 
 
 
@@ -94,38 +94,39 @@ enterFlight =
     ]
 
 
-chooseSeats :: Int -> Task [Seat]
-chooseSeats n =
-  enterMultipleChoiceWithShared "Pick a seat" [] freeSeatStore >>?
+chooseSeats :: (Shared [Seat]) Int -> Task [Seat]
+chooseSeats freeSeats n =
+  enterMultipleChoiceWithShared "Pick a seat" [] freeSeats >>?
     [ ( "Pick"
       , \seats -> length seats == n
       , \seats ->
-          freeSeatStore $= removeElems seats >>- \_ ->
+          freeSeats $= removeElems seats >>- \_ ->
           return seats
       )
     ]
 
 
-makeBooking :: -> Task Booking
-makeBooking =
+makeBooking :: (Shared [Seat]) -> Task Booking
+makeBooking freeSeats =
   (enterFlight -&&- enterPassengers) >>- \( flight, passengers ) ->
-  chooseSeats (length passengers) >>- \seats ->
+  chooseSeats freeSeats (length passengers) >>- \seats ->
   viewInformation "Booking" [] { passengers = passengers, flight = flight, seats = seats }
 
 
-main :: Task Booking
+main :: Task [Booking]
 main =
-  viewSharedInformation "Free seats" [] freeSeatStore
-    ||-
-  makeBooking
-
+  withShared initSeats (\freeSeats ->
+    viewSharedInformation "Free seats" [] freeSeats
+      ||-
+    allTasks [ makeBooking freeSeats, makeBooking freeSeats, makeBooking freeSeats ]
+  )
 
 
 
 // Boilerplate /////////////////////////////////////////////////////////////////
 
 
-derive class iTask Seat, Flight, Booking, Passenger, Nationality
+derive class iTask Seat, Flight, Booking, Passenger
 
 
 Start :: *World -> *World

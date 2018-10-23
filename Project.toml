@@ -8,9 +8,9 @@ Authors = ["Tim Steenvoorden <tim@cs.ru.nl>"]
 # Sourcedir = "2.3-stepwise-sum-back"
 # Sourcedir = "3.1-pick-seat"
 # Sourcedir = "3.2-pick-free-seat"
-# Sourcedir = "3.3-flight-reservation"
+Sourcedir = "3.3-flight-reservation"
 # Sourcedir = "4.1-meeting-date"
-Sourcedir = "."
+# Sourcedir = "."
 
 [Executable]
 Name = "main.exe"
