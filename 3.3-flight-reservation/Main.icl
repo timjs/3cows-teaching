@@ -121,7 +121,6 @@ main =
     (allTasks
       [ makeBooking freeSeats
       , makeBooking freeSeats
-      , makeBooking freeSeats
       ] <<@ ArrangeHorizontal
     )
   )
