@@ -118,7 +118,12 @@ main =
   withShared initSeats (\freeSeats ->
     viewSharedInformation "Free seats" [] freeSeats
       ||-
-    allTasks [ makeBooking freeSeats, makeBooking freeSeats, makeBooking freeSeats ]
+    (allTasks
+      [ makeBooking freeSeats
+      , makeBooking freeSeats
+      , makeBooking freeSeats
+      ] <<@ ArrangeHorizontal
+    )
   )
 
 
@@ -130,7 +135,7 @@ derive class iTask Seat, Flight, Booking, Passenger
 
 
 Start :: *World -> *World
-Start world = startEngine (main <<@ InWindow) world
+Start world = startEngine main world
 
 
 (>>?) infixl 1 :: (Task a) [( String, a -> Bool, a -> Task b )] -> Task b | iTask a & iTask b
